@@ -1,7 +1,18 @@
 import java.awt.*
 import javax.swing.*
+import javax.swing.event.ListSelectionEvent
+import javax.swing.event.ListSelectionListener
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.ArrayList
+import java.util.Collections
+import java.awt.Color
+import java.awt.Font
+import javax.swing.BorderFactory
+import javax.swing.JScrollPane
+import javax.swing.ScrollPaneConstants
+import javax.swing.UIManager
+import javax.swing.plaf.nimbus.NimbusLookAndFeel
 
 class DiaryApp : JFrame() {
     private lateinit var textArea: JTextArea
@@ -12,10 +23,10 @@ class DiaryApp : JFrame() {
     private lateinit var productivenessCheckBox: JCheckBox
 
     init {
-        title = "Дневник"
+        title = "Современный дневник"
         defaultCloseOperation = EXIT_ON_CLOSE
         setExtendedState(MAXIMIZED_BOTH)
-        background = Color.WHITE
+        background = Color.decode("#FAFAFA")
         layout = BorderLayout()
 
         setupComponents()
@@ -26,74 +37,102 @@ class DiaryApp : JFrame() {
 
     private fun setupComponents() {
      
-        val screenWidth = Toolkit.getDefaultToolkit().screenSize.width
-        val screenHeight = Toolkit.getDefaultToolkit().screenSize.height
-        setBounds((screenWidth - screenWidth / 2) / 2, (screenHeight - screenHeight / 2) / 2,
-            screenWidth / 2, screenHeight / 2)
+        val mainPanel = JPanel(BorderLayout())
+        mainPanel.background = Color.decode("#FAFAFA")
 
-    
-        tabbedPane = JTabbedPane(JTabbedPane.TOP)
-        tabbedPane.tabPlacement = JTabbedPane.LEFT
-
-    
+   
         val newEntryPanel = JPanel(BorderLayout())
-        newEntryPanel.background = Color.WHITE
+        newEntryPanel.background = Color.decode("#FAFAFA")
 
-     
-        val inputPanel = JPanel(GridLayout(3, 1))
-        inputPanel.background = Color.WHITE
-
+       
         textArea = JTextArea()
         textArea.lineWrap = true
         textArea.wrapStyleWord = true
         textArea.font = Font(Font.SANS_SERIF, Font.PLAIN, 16)
+        textArea.foreground = Color.decode("#333")
+        textArea.background = Color.decode("#FFFFFF")
         val scrollPane = JScrollPane(textArea)
-        scrollPane.border = BorderFactory.createTitledBorder("Комментарий")
-        inputPanel.add(scrollPane)
+        scrollPane.border = BorderFactory.createTitledBorder("Новые мысли")
+        newEntryPanel.add(scrollPane, BorderLayout.CENTER)
 
- 
-        dayRatingComboBox = JComboBox(arrayOf("Хорошо", "Плохо"))
+     
+        val inputPanel = JPanel(GridLayout(3, 1))
+        inputPanel.background = Color.decode("#FAFAFA")
+
+     
+        dayRatingComboBox = JComboBox(arrayOf("😊 Отлично", "🤷‍♂️ Так себе", "🥶 Устал"))
         dayRatingComboBox.preferredSize = Dimension(150, 30)
         inputPanel.add(dayRatingComboBox)
 
-  
-        productivenessCheckBox = JCheckBox("Был продуктивным?")
-        productivenessCheckBox.background = Color.WHITE
+     
+        productivenessCheckBox = JCheckBox("🏃‍♂️ Был продуктивным?")
+        productivenessCheckBox.background = Color.decode("#FAFAFA")
         inputPanel.add(productivenessCheckBox)
 
-  
-        val addButton = JButton("Добавить запись")
-        addButton.background = Color.decode("#007BFF") // Яркий синий цвет
-        addButton.foreground = Color.WHITE
+      
+        val addButton = JButton("🎯 Добавить запись")
+        addButton.background = Color.decode("#4CAF50")
+        addButton.foreground = Color.decode("#FFF")
         addButton.font = Font(Font.SANS_SERIF, Font.BOLD, 16)
         addButton.addActionListener {
             addNewRecord()
         }
-        newEntryPanel.add(inputPanel, BorderLayout.NORTH)
-        newEntryPanel.add(addButton, BorderLayout.SOUTH)
+        inputPanel.add(addButton)
 
+        newEntryPanel.add(inputPanel, BorderLayout.SOUTH)
+
+   
         val historyPanel = JPanel(BorderLayout())
-        historyPanel.background = Color.WHITE
+        historyPanel.background = Color.decode("#FAFAFA")
 
         historyModel = DefaultListModel()
         historyList = JList(historyModel)
         historyList.font = Font(Font.SANS_SERIF, Font.PLAIN, 16)
         val historyScrollPane = JScrollPane(historyList)
-        historyScrollPane.border = BorderFactory.createTitledBorder("История записей")
+        historyScrollPane.border = BorderFactory.createTitledBorder("📝 История записей")
         historyPanel.add(historyScrollPane, BorderLayout.CENTER)
 
-
-        tabbedPane.addTab("Новая запись", newEntryPanel)
-        tabbedPane.addTab("История", historyPanel)
+ 
+        val bottomPanel = JPanel(BorderLayout())
+        bottomPanel.background = Color.decode("#FAFAFA")
 
     
-        add(tabbedPane, BorderLayout.CENTER)
+        val calendarPanel = JPanel(BorderLayout())
+        calendarPanel.background = Color.decode("#FAFAFA")
+        val today = LocalDateTime.now()
+        val dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+        val calendarTitle = JLabel(today.format(dateFormat))
+        calendarTitle.foreground = Color.decode("#333")
+        calendarTitle.horizontalAlignment = SwingConstants.CENTER
+        calendarPanel.add(calendarTitle, BorderLayout.NORTH)
+
+      
+        val notesPanel = JPanel(BorderLayout())
+        notesPanel.background = Color.decode("#FAFAFA")
+        val notesTextArea = JTextArea()
+        notesTextArea.lineWrap = true
+        notesTextArea.wrapStyleWord = true
+        notesTextArea.font = Font(Font.SANS_SERIF, Font.PLAIN, 16)
+        notesTextArea.foreground = Color.decode("#333")
+        notesTextArea.background = Color.decode("#FFFFFF")
+        val notesScrollPane = JScrollPane(notesTextArea)
+        notesScrollPane.border = BorderFactory.createTitledBorder("📋 Заметки")
+        notesPanel.add(notesScrollPane, BorderLayout.CENTER)
+
+        // Общая сборка
+        mainPanel.add(newEntryPanel, BorderLayout.NORTH)
+        mainPanel.add(historyPanel, BorderLayout.CENTER)
+        mainPanel.add(bottomPanel, BorderLayout.SOUTH)
+        bottomPanel.add(calendarPanel, BorderLayout.WEST)
+        bottomPanel.add(notesPanel, BorderLayout.EAST)
+
+        add(mainPanel, BorderLayout.CENTER)
     }
 
     private fun addNewRecord() {
         val comment = textArea.text.trim()
         if (comment.isBlank()) {
-            JOptionPane.showMessageDialog(this, "Напишите комментарий, пожалуйста.")
+            JOptionPane.showMessageDialog(this, "Введите вашу мысль.")
             return
         }
 
@@ -102,13 +141,13 @@ class DiaryApp : JFrame() {
         val formattedDateTime = currentDateTime.format(formatter)
 
         val rating = dayRatingComboBox.selectedItem as String
-        val wasProductive = if (productivenessCheckBox.isSelected) "продуктивный" else "непродуктивный"
+        val wasProductive = if (productivenessCheckBox.isSelected) "✨ да" else "☹️ нет"
 
-        val recordText = "$formattedDateTime | День: $rating | Продуктивность: $wasProductive | Коммент.: $comment"
+        val recordText = "$formattedDateTime | 🗓️ День: $rating | 👉 Продуктивность: $wasProductive | 💬 Мысли: $comment"
         historyModel.addElement(recordText)
 
         textArea.text = ""
-        JOptionPane.showMessageDialog(this, "Запись добавлена!")
+        JOptionPane.showMessageDialog(this, "Запись успешно добавлена!")
     }
 
     companion object {

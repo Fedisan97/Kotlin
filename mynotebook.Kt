@@ -4,8 +4,7 @@ import javax.swing.event.ListSelectionEvent
 import javax.swing.event.ListSelectionListener
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.util.ArrayList
-import java.util.Collections
+import java.util.Calendar
 import java.awt.Color
 import java.awt.Font
 import javax.swing.BorderFactory
@@ -21,6 +20,7 @@ class DiaryApp : JFrame() {
     private lateinit var tabbedPane: JTabbedPane
     private lateinit var dayRatingComboBox: JComboBox<String>
     private lateinit var productivenessCheckBox: JCheckBox
+    private lateinit var calendar: JCalendarPanel
 
     init {
         title = "Современный дневник"
@@ -36,15 +36,14 @@ class DiaryApp : JFrame() {
     }
 
     private fun setupComponents() {
-     
+   
         val mainPanel = JPanel(BorderLayout())
         mainPanel.background = Color.decode("#FAFAFA")
 
-   
+     
         val newEntryPanel = JPanel(BorderLayout())
         newEntryPanel.background = Color.decode("#FAFAFA")
 
-       
         textArea = JTextArea()
         textArea.lineWrap = true
         textArea.wrapStyleWord = true
@@ -52,19 +51,19 @@ class DiaryApp : JFrame() {
         textArea.foreground = Color.decode("#333")
         textArea.background = Color.decode("#FFFFFF")
         val scrollPane = JScrollPane(textArea)
-        scrollPane.border = BorderFactory.createTitledBorder("Новые мысли")
+        scrollPane.border = BorderFactory.createTitledBorder("Ваши мысли")
         newEntryPanel.add(scrollPane, BorderLayout.CENTER)
 
-     
+ 
         val inputPanel = JPanel(GridLayout(3, 1))
         inputPanel.background = Color.decode("#FAFAFA")
 
-     
+      
         dayRatingComboBox = JComboBox(arrayOf("😊 Отлично", "🤷‍♂️ Так себе", "🥶 Устал"))
         dayRatingComboBox.preferredSize = Dimension(150, 30)
         inputPanel.add(dayRatingComboBox)
 
-     
+       
         productivenessCheckBox = JCheckBox("🏃‍♂️ Был продуктивным?")
         productivenessCheckBox.background = Color.decode("#FAFAFA")
         inputPanel.add(productivenessCheckBox)
@@ -81,7 +80,7 @@ class DiaryApp : JFrame() {
 
         newEntryPanel.add(inputPanel, BorderLayout.SOUTH)
 
-   
+      
         val historyPanel = JPanel(BorderLayout())
         historyPanel.background = Color.decode("#FAFAFA")
 
@@ -92,21 +91,16 @@ class DiaryApp : JFrame() {
         historyScrollPane.border = BorderFactory.createTitledBorder("📝 История записей")
         historyPanel.add(historyScrollPane, BorderLayout.CENTER)
 
- 
+  
         val bottomPanel = JPanel(BorderLayout())
         bottomPanel.background = Color.decode("#FAFAFA")
 
-    
-        val calendarPanel = JPanel(BorderLayout())
-        calendarPanel.background = Color.decode("#FAFAFA")
-        val today = LocalDateTime.now()
-        val dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-        val calendarTitle = JLabel(today.format(dateFormat))
-        calendarTitle.foreground = Color.decode("#333")
-        calendarTitle.horizontalAlignment = SwingConstants.CENTER
-        calendarPanel.add(calendarTitle, BorderLayout.NORTH)
+     
+        calendar = JCalendarPanel(Calendar.getInstance())
+        calendar.background = Color.decode("#FAFAFA")
+  
 
-      
+    
         val notesPanel = JPanel(BorderLayout())
         notesPanel.background = Color.decode("#FAFAFA")
         val notesTextArea = JTextArea()
@@ -119,11 +113,11 @@ class DiaryApp : JFrame() {
         notesScrollPane.border = BorderFactory.createTitledBorder("📋 Заметки")
         notesPanel.add(notesScrollPane, BorderLayout.CENTER)
 
-        // Общая сборка
+     
         mainPanel.add(newEntryPanel, BorderLayout.NORTH)
         mainPanel.add(historyPanel, BorderLayout.CENTER)
         mainPanel.add(bottomPanel, BorderLayout.SOUTH)
-        bottomPanel.add(calendarPanel, BorderLayout.WEST)
+        bottomPanel.add(calendar, BorderLayout.WEST)
         bottomPanel.add(notesPanel, BorderLayout.EAST)
 
         add(mainPanel, BorderLayout.CENTER)
@@ -155,5 +149,37 @@ class DiaryApp : JFrame() {
         fun main(args: Array<String>) {
             SwingUtilities.invokeLater { DiaryApp() }
         }
+    }
+}
+
+
+class JCalendarPanel(private val cal: Calendar) : JPanel() {
+    init {
+        layout = GridLayout(6, 7)
+        background = Color.decode("#FAFAFA")
+        generateDays()
+    }
+
+    private fun generateDays() {
+        removeAll()
+        val startWeekDay = cal.get(Calendar.DAY_OF_WEEK)
+        val daysInMonth = cal.getActualMaximum(Calendar.DAY_OF_MONTH)
+        val firstDayOfMonth = cal.clone() as Calendar
+        firstDayOfMonth.set(Calendar.DAY_OF_MONTH, 1)
+        val offset = firstDayOfMonth.get(Calendar.DAY_OF_WEEK) - 1
+
+        repeat(offset) {
+            add(JLabel("", SwingConstants.CENTER)) 
+        }
+
+        for (i in 1..daysInMonth) {
+            val label = JLabel(i.toString(), SwingConstants.CENTER)
+            label.foreground = Color.decode("#333")
+            label.font = Font(Font.SANS_SERIF, Font.PLAIN, 14)
+            add(label)
+        }
+
+        revalidate()
+        repaint()
     }
 }
